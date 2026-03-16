@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dichtheitsprüfung – Protokoll (SPA, Single-File)</title>
+  <style>
+    :root{--bg:#f6f7fb;--card:#fff;--ink:#1b1f2a;--muted:#667085;--line:#e6e8ee;--primary:#2f5ea6;--danger:#c62828;--ok:#2e7d32;}
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    body{margin:0;background:var(--bg);color:var(--ink)}
+    header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,#ffffff 0%,#ffffffcc 100%);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+    .wrap{max-width:1060px;margin:0 auto;padding:18px 16px}
+    h1{margin:0;font-size:20px;font-weight:700}
+    .sub{color:var(--muted);font-size:12px;margin-top:4px}
+
+    .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+    @media (min-width: 980px){.grid{grid-template-columns:1.2fr .8fr}}
+
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+    .card h2{margin:0 0 10px 0;font-size:15px}
+
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input[type=text], input[type=number], textarea{width:100%;padding:10px 10px;border:1px solid #cfd6e4;border-radius:8px;background:#fff;outline:none}
+    input[type=text]:focus, input[type=number]:focus, textarea:focus{border-color:#7aa7ff;box-shadow:0 0 0 3px #7aa7ff2b}
+    textarea{min-height:80px;resize:vertical}
+
+    .row{display:grid;grid-template-columns:1fr;gap:10px}
+    @media (min-width: 700px){.row{grid-template-columns:repeat(2,1fr)}}
+
+    .btns{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;font-weight:600}
+    button.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    button.danger{background:#fff;border-color:#f0c0c0;color:var(--danger)}
+    button:disabled{opacity:.6;cursor:not-allowed}
+
+    .room{border:1px dashed #cfd6e4;border-radius:12px;padding:12px;margin-top:10px}
+    .roomHead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .roomTitle{font-weight:800}
+
+    .photos{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .ph{width:140px}
+    .ph img{width:140px;height:100px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+    .ph .mini{display:flex;justify-content:space-between;gap:6px;margin-top:6px}
+    .ph .mini button{padding:6px 8px;border-radius:8px;font-size:12px}
+
+    .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;background:#eef4ff;color:#1f4b90;border:1px solid #d7e5ff;font-size:12px;font-weight:700}
+    .small{font-size:12px;color:var(--muted)}
+    .ok{color:var(--ok);font-weight:700}
+
+    .footerNote{margin-top:8px;color:var(--muted);font-size:12px}
+
+    .previewBox{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fbfcff}
+    .previewBox strong{font-size:12px}
+    .previewGrid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+    .kv{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed #e3e7f1;padding-bottom:6px}
+
+    .topActions{display:flex;gap:10px;align-items:center;justify-content:flex-end}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+    <div>
+      <h1>Protokoll erstellen – Dichtheitsprüfung</h1>
+      <div class="sub">Single-Page-App </div>
+    </div>
+    <div class="topActions">
+      <button id="btnReset" class="danger" title="Alle Felder löschen">Reset</button>
+      <button id="btnExport" class="primary">PDF erstellen</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="grid">
+
+    <section class="card" id="cardForm">
+      <h2>Allgemeine Angaben</h2>
+      <div class="row">
+        <div>
+          <label>Kunde</label>
+          <input id="kunde" type="text" placeholder="z.B. Müller GmbH" />
+        </div>
+        <div>
+          <label>Bauvorhaben</label>
+          <input id="bauvorhaben" type="text" placeholder="z.B. Neubau EFH" />
+        </div>
+        <div>
+          <label>Haus</label>
+          <input id="haus" type="text" placeholder="z.B. Haus A" />
+        </div>
+        <div>
+          <label>Stockwerk</label>
+          <input id="stockwerk" type="text" placeholder="z.B. EG / 2" />
+        </div>
+        <div>
+          <label>Einheit</label>
+          <input id="einheit" type="text" placeholder="z.B. 3" />
+        </div>
+        <div>
+          <label>Verteiler</label>
+          <input id="verteiler" type="text" placeholder="z.B. V01" />
+        </div>
+        <div>
+          <label>Monteur</label>
+          <input id="monteur" type="text" placeholder="z.B. Max Mustermann" />
+        </div>
+        <div>
+          <label>Datum</label>
+          <input id="datum" type="text" placeholder="TT.MM.JJJJ" />
+          <div class="small">Leer lassen → heutiges Datum wird automatisch verwendet.</div>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <label>Anmerkungen</label>
+        <textarea id="anmerkungen" placeholder="Freitext"></textarea>
+      </div>
+
+      <div style="margin-top:12px" class="btns">
+        <span class="pill">Druckmedium: <b>Luft</b> · Prüfdruck: <b>3bar</b></span>
+        <span class="small">(Fix wie im PDF) </span>
+      </div>
+  <div style="margin-top:12px" class="btns">
+    <button id="btnSave" title="Eingaben lokal speichern (ohne Fotos)">Speichern</button>
+    <button id="btnLoad" title="Gespeicherte Eingaben laden (ohne Fotos)">Laden</button>
+    <span class="small">Hinweis: Fotos werden nicht mitgespeichert und müssen nach dem Laden erneut ausgewählt werden.</span>
+  </div>
+  <div style="margin-top:10px" class="previewBox">
+    <strong>Firmenangaben (statisch)</strong>
+    <div class="previewGrid">
+      <div class="kv"><span class="small">Firmenname</span><span id="pvName"></span></div>
+      <div class="kv"><span class="small">Adresse</span><span id="pvAddr"></span></div>
+      <div class="kv"><span class="small">Website</span><span id="pvWeb"></span></div>
+      <div class="small"><span class="ok">✔</span> Internet ist ok → Bibliotheken werden von CDN geladen.</div>
+    </div>
+  </div>
+
+
+      <div class="footerNote">
+        <b>Anforderung (fix):</b> Die Dichtigkeit der Fußbodenheizung wurde durch eine Dichtheitsprüfung sichergestellt. Der Prüfdruck betrug hier abweichend von der VOB 3bar. Während der Estricheinbringung muss der Betriebsdruck bauseitig aufrecht erhalten werden. 
+      </div>
+
+      <div style="margin-top:14px" class="btns">
+        <button id="btnAddRoom">Raum hinzufügen</button>
+        <span class="pill">Gesamtlänge: <b id="sumLen">0</b> m</span>
+      </div>
+
+      <div id="rooms"></div>
+    </section>
+  </div>
+</main>
+
+<!-- CDN libs (ok because you have internet) -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.3/dist/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  // --- State ---
+  const state = {
+  rooms: [],
+};
+
+// --- Statische Firmenkonfiguration (hier im HTML anpassen) ---
+const COMPANY = {
+  name: 'Test Test123',
+  web: 'www.example.com',
+  addr1: 'Musterstraße 1',
+  addr2: '12345 Musterstadt',
+  // Optional: Base64 Data-URL eines Logos (PNG/JPG). Wenn null, wird ein Platzhalter verwendet.
+  logoDataUrl: null,
+};
+
+  // Platzhalter-Logo (einfaches SVG) als Data-URI
+const placeholderLogo = () => {
+  const initials = (COMPANY.name || 'MT')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(s => s[0].toUpperCase())
+    .join('') || 'MT';
+
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="90">
+  <rect x="0" y="0" width="260" height="90" rx="14" fill="#1f4b90"/>
+  <text x="18" y="52" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#ffffff">${initials}</text>
+  <text x="78" y="38" font-family="Arial, sans-serif" font-size="16" fill="#d7e5ff">${(COMPANY.name || '').substring(0, 24)}</text>
+  <text x="78" y="60" font-family="Arial, sans-serif" font-size="12" fill="#d7e5ff">Dichtheitsprüfung</text>
+</svg>`;
+
+  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+};
+
+  // --- Utilities ---
+  function todayDE(){
+    const d = new Date();
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    return `${dd}.${mm}.${yyyy}`;
+  }
+
+  function num(v){
+    const x = Number(v);
+    return Number.isFinite(x) ? x : 0;
+  }
+
+  async function fileToDataUrl(file){
+    return new Promise((resolve,reject)=>{
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function downscaleImage(dataUrl, maxW=1400, jpegQuality=0.8){
+    // Converts to JPEG and downscales to maxW while preserving aspect ratio.
+    return new Promise((resolve)=>{
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxW){
+          const ratio = maxW / w;
+          w = Math.round(w*ratio);
+          h = Math.round(h*ratio);
+        }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0,0,w,h);
+        ctx.drawImage(img,0,0,w,h);
+        const out = c.toDataURL('image/jpeg', jpegQuality);
+        resolve(out);
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
+  function updateSumLen(){
+    const sum = state.rooms.reduce((acc,r)=>acc + num(r.length), 0);
+    $('sumLen').textContent = sum.toFixed(0);
+  }
+
+  function escapeText(s){
+    return (s ?? '').toString().replace(/[\u0000-\u001F]/g,'');
+  }
+
+  // --- Rooms UI ---
+  function addRoom(prefill={}){
+    const id = crypto.randomUUID();
+    const room = { id, name: prefill.name ?? '', length: prefill.length ?? 0, photos: prefill.photos ?? [] };
+    state.rooms.push(room);
+    renderRooms();
+    updateSumLen();
+  }
+
+  function removeRoom(id){
+    state.rooms = state.rooms.filter(r=>r.id!==id);
+    renderRooms();
+    updateSumLen();
+  }
+
+  function roomIndex(id){
+    return state.rooms.findIndex(r=>r.id===id);
+  }
+
+  function renderRooms(){
+    const root = $('rooms');
+    root.innerHTML = '';
+
+    state.rooms.forEach((r, idx) => {
+      const box = document.createElement('div');
+      box.className = 'room';
+
+      box.innerHTML = `
+        <div class="roomHead">
+          <div class="roomTitle">Raum ${idx+1}</div>
+          <button class="danger" data-act="rm" data-id="${r.id}">Entfernen</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div>
+            <label>Bezeichnung</label>
+            <input type="text" value="${escapeText(r.name)}" data-act="name" data-id="${r.id}" placeholder="z.B. Wohnzimmer"/>
+          </div>
+          <div>
+            <label>Länge (m)</label>
+            <input type="number" min="0" step="1" value="${escapeText(r.length)}" data-act="len" data-id="${r.id}" />
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <label>Fotos (mehrere möglich)</label>
+          <input type="file" accept="image/*" multiple data-act="photos" data-id="${r.id}"/>
+          <div class="small">Tipp: Handyfotos werden automatisch komprimiert beim Export.</div>
+        </div>
+        <div class="photos" id="ph_${r.id}"></div>
+      `;
+
+      root.appendChild(box);
+
+      // render thumbnails
+      const phRoot = box.querySelector('#ph_' + r.id);
+      r.photos.forEach((p, pIdx) => {
+        const d = document.createElement('div');
+        d.className = 'ph';
+        d.innerHTML = `
+          <img src="${p.dataUrl}" alt="Foto"/>
+          <div class="mini">
+            <button data-act="phdel" data-id="${r.id}" data-pi="${pIdx}">Löschen</button>
+            <button data-act="phup" data-id="${r.id}" data-pi="${pIdx}" title="Nach oben">↑</button>
+            <button data-act="phdn" data-id="${r.id}" data-pi="${pIdx}" title="Nach unten">↓</button>
+          </div>
+        `;
+        phRoot.appendChild(d);
+      });
+    });
+  }
+
+  // Event delegation for rooms
+  $('rooms').addEventListener('click', (e)=>{
+    const b = e.target.closest('button');
+    if(!b) return;
+    const act = b.dataset.act;
+    const id = b.dataset.id;
+    if(act==='rm') return removeRoom(id);
+    if(act==='phdel'){
+      const pi = Number(b.dataset.pi);
+      const ri = roomIndex(id);
+      if(ri>=0){ state.rooms[ri].photos.splice(pi,1); renderRooms(); }
+    }
+    if(act==='phup' || act==='phdn'){
+      const pi = Number(b.dataset.pi);
+      const ri = roomIndex(id);
+      if(ri>=0){
+        const arr = state.rooms[ri].photos;
+        const ni = act==='phup' ? pi-1 : pi+1;
+        if(ni>=0 && ni<arr.length){
+          const tmp = arr[pi]; arr[pi]=arr[ni]; arr[ni]=tmp;
+          renderRooms();
+        }
+      }
+    }
+  });
+
+  $('rooms').addEventListener('input', (e)=>{
+    const el = e.target;
+    const act = el.dataset.act;
+    const id = el.dataset.id;
+    const ri = roomIndex(id);
+    if(ri<0) return;
+    if(act==='name'){
+      state.rooms[ri].name = el.value;
+    }
+    if(act==='len'){
+      state.rooms[ri].length = num(el.value);
+      updateSumLen();
+    }
+  });
+
+  $('rooms').addEventListener('change', async (e)=>{
+    const el = e.target;
+    const act = el.dataset.act;
+    if(act!=='photos') return;
+    const id = el.dataset.id;
+    const ri = roomIndex(id);
+    if(ri<0) return;
+
+    const files = Array.from(el.files || []);
+    for(const f of files){
+      const raw = await fileToDataUrl(f);
+      // keep raw in UI; we downscale again during export for better quality control
+      state.rooms[ri].photos.push({ name: f.name, dataUrl: raw });
+    }
+    el.value = '';
+    renderRooms();
+  });
+
+  // --- Firmenvorschau (statisch, nicht editierbar im Frontend) ---
+function bindCompanyPreview(){
+  document.getElementById('pvName').textContent = COMPANY.name || '';
+  document.getElementById('pvAddr').textContent = [COMPANY.addr1, COMPANY.addr2].filter(Boolean).join(' · ');
+  document.getElementById('pvWeb').textContent = COMPANY.web || '';
+}
+
+// --- LocalStorage ---
+  const LS_KEY = 'leak_test_spa_v1';
+  function saveLS(){
+    const payload = {
+      fields: {
+        kunde: $('kunde').value,
+        bauvorhaben: $('bauvorhaben').value,
+        haus: $('haus').value,
+        stockwerk: $('stockwerk').value,
+        einheit: $('einheit').value,
+        verteiler: $('verteiler').value,
+        monteur: $('monteur').value,
+        datum: $('datum').value,
+        anmerkungen: $('anmerkungen').value,
+      },
+      rooms: state.rooms.map(r => ({ id:r.id, name:r.name, length:r.length /* photos intentionally omitted */ })),
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(payload));
+    alert('Gespeichert (ohne Fotos).');
+  }
+
+  function loadLS(){
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw){ alert('Nichts gespeichert.'); return; }
+    const p = JSON.parse(raw);
+    const f = p.fields || {};
+    $('kunde').value = f.kunde || '';
+    $('bauvorhaben').value = f.bauvorhaben || '';
+    $('haus').value = f.haus || '';
+    $('stockwerk').value = f.stockwerk || '';
+    $('einheit').value = f.einheit || '';
+    $('verteiler').value = f.verteiler || '';
+    $('monteur').value = f.monteur || '';
+    $('datum').value = f.datum || '';
+    $('anmerkungen').value = f.anmerkungen || '';
+  state.rooms = (p.rooms || []).map(r => ({ id: r.id || crypto.randomUUID(), name:r.name||'', length:num(r.length), photos: [] }));
+    bindCompanyPreview();
+    renderRooms();
+    updateSumLen();
+    alert('Geladen (Fotos müssen neu gewählt werden).');
+  }
+
+  function resetAll(){
+    if(!confirm('Alles zurücksetzen?')) return;
+    ['kunde','bauvorhaben','haus','stockwerk','einheit','verteiler','monteur','datum','anmerkungen'].forEach(id => $(id).value='');
+    state.rooms = [];
+    renderRooms();
+    updateSumLen();
+  }
+
+  // --- PDF Generation ---
+  async function exportPDF(){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({unit:'mm', format:'a4', compress:true});
+
+    // Common variables
+    const marginL = 14;
+    const marginR = 14;
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+
+    const company = {
+  name: COMPANY.name || 'Max Testman',
+  addr1: COMPANY.addr1 || '',
+  addr2: COMPANY.addr2 || '',
+  web: COMPANY.web || '',
+};
+
+    const date = ($('datum').value || '').trim() || todayDE();
+
+    // load logo
+    let logo = COMPANY.logoDataUrl || placeholderLogo();
+    // If user uploaded huge logo, downscale
+    logo = await downscaleImage(logo, 700, 0.85);
+
+    // --- Helper: footer ---
+    function drawFooter(){
+      const y = pageH - 22;
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(11);
+      doc.text(company.name, marginL, y);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      doc.text([company.addr1, company.addr2, company.web].filter(Boolean), marginL, y+5);
+      // Logo right
+      try{
+        doc.addImage(logo, 'JPEG', pageW-62, pageH-30, 48, 18, undefined, 'FAST');
+      }catch(e){
+        // if svg or unknown
+        try{ doc.addImage(logo, 'PNG', pageW-62, pageH-30, 48, 18, undefined, 'FAST'); }catch(_){/* ignore */}
+      }
+    }
+
+    // --- Page 1: General ---
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(18);
+    doc.text('Dichtheitsprüfung', marginL, 20);
+    doc.setFontSize(11);
+    doc.setFont('helvetica','normal');
+    doc.text(date, marginL+60, 20);
+
+    // General info block
+    const pairs = [
+      ['Kunde', $('kunde').value],
+      ['Bauvorhaben', $('bauvorhaben').value],
+      ['Haus', $('haus').value],
+      ['Stockwerk', $('stockwerk').value],
+      ['Einheit', $('einheit').value],
+      ['Verteiler', $('verteiler').value],
+      ['Monteur', $('monteur').value],
+      ['Anmerkungen', $('anmerkungen').value],
+    ];
+
+    let y = 32;
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(10);
+    pairs.forEach(([k,v]) => {
+      doc.text(k, marginL, y);
+      doc.setFont('helvetica','normal');
+      const txt = (v || '').toString();
+      const lines = doc.splitTextToSize(txt, pageW - marginL - marginR - 42);
+      doc.text(lines, marginL+42, y);
+      y += Math.max(6, lines.length*5);
+      doc.setFont('helvetica','bold');
+    });
+
+    y += 4;
+    doc.setFont('helvetica','bold');
+    doc.text('Druckmedium:', marginL, y);
+    doc.setFont('helvetica','normal');
+    doc.text('Luft', marginL+30, y);
+    doc.setFont('helvetica','bold');
+    doc.text('Prüfdruck:', marginL+55, y);
+    doc.setFont('helvetica','normal');
+    doc.text('3bar', marginL+80, y);
+
+    y += 10;
+    doc.setFont('helvetica','bold');
+    doc.text('Anforderung:', marginL, y);
+    doc.setFont('helvetica','normal');
+    const anforderung = 'Die Dichtigkeit der Fußbodenheizung wurde durch eine Dichtheitsprüfung sichergestellt. Der Prüfdruck betrug hier abweichend von der VOB 3bar. Während der Estricheinbringung muss der Betriebsdruck bauseitig aufrecht erhalten werden.';
+    const anLines = doc.splitTextToSize(anforderung, pageW - marginL - marginR);
+    doc.text(anLines, marginL, y+6);
+
+    drawFooter();
+
+    // --- Page 2: Table ---
+    doc.addPage();
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(12);
+    doc.text('Verteilerabgänge', marginL, 18);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(10);
+    doc.text('Verteiler von links nach rechts gelesen.', marginL, 24);
+
+    const rows = state.rooms.map((r, i) => [String(i+1), r.name || '', `${num(r.length).toFixed(0)}m`]);
+    const sum = state.rooms.reduce((acc,r)=>acc+num(r.length),0);
+
+    doc.autoTable({
+      head: [['Nr.', 'Bezeichnung', 'Länge']],
+      body: rows.length ? rows : [['', '(keine Räume)', '0m']],
+      startY: 30,
+      styles: { font: 'helvetica', fontSize: 10, cellPadding: 2 },
+      headStyles: { fillColor: [31,75,144], textColor: 255 },
+      columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 120 }, 2: { cellWidth: 30, halign:'right' } },
+      theme: 'grid'
+    });
+
+    const endY = doc.lastAutoTable.finalY + 8;
+    doc.setFont('helvetica','bold');
+    doc.text('Gesamtlänge', marginL, endY);
+    doc.text(`${sum.toFixed(0)}m`, pageW - marginR, endY, {align:'right'});
+
+    drawFooter();
+
+    // --- Pages per room (with photos) ---
+    for(let i=0;i<state.rooms.length;i++){
+      const r = state.rooms[i];
+      doc.addPage();
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(16);
+      doc.text(String(i+1), marginL, 20);
+      doc.setFontSize(12);
+      doc.text((r.name || '').toString(), marginL+10, 20);
+      doc.setFont('helvetica','normal');
+      doc.text(`${num(r.length).toFixed(0)}m`, marginL+10, 28);
+
+      let yy = 38;
+      const maxImgW = pageW - marginL - marginR;
+      const maxImgH = 72; // per image box
+
+      for(let p=0; p<r.photos.length; p++){
+        if(yy + maxImgH > pageH - 30){
+          drawFooter();
+          doc.addPage();
+          yy = 20;
+        }
+
+        // Downscale each photo for PDF
+        const scaled = await downscaleImage(r.photos[p].dataUrl, 1600, 0.82);
+
+        // Determine aspect ratio by loading into Image
+        const dims = await new Promise((resolve)=>{
+          const im = new Image();
+          im.onload = () => resolve({w:im.width,h:im.height});
+          im.onerror = () => resolve({w:1600,h:900});
+          im.src = scaled;
+        });
+
+        let w = maxImgW;
+        let h = Math.round((dims.h/dims.w)*w);
+        if(h > maxImgH){
+          h = maxImgH;
+          w = Math.round((dims.w/dims.h)*h);
+        }
+        const x = marginL;
+
+        try{
+          doc.addImage(scaled, 'JPEG', x, yy, w, h, undefined, 'FAST');
+        }catch(e){
+          try{ doc.addImage(scaled, 'PNG', x, yy, w, h, undefined, 'FAST'); }catch(_){/* ignore */}
+        }
+        yy += h + 6;
+      }
+
+      drawFooter();
+    }
+
+    const safeKunde = ($('kunde').value || 'Protokoll').replace(/[^a-zA-Z0-9\u00C0-\u017F_\- ]/g,'').trim();
+    doc.save(`Dichtheitsprüfung_${safeKunde}_${date.replaceAll('.','-')}.pdf`);
+  }
+
+  // --- Init ---
+  $('btnAddRoom').addEventListener('click', ()=>addRoom());
+  $('btnSave').addEventListener('click', saveLS);
+  $('btnLoad').addEventListener('click', loadLS);
+  $('btnReset').addEventListener('click', resetAll);
+  $('btnExport').addEventListener('click', exportPDF);
+
+  // Prefill date and one room
+  $('datum').value = todayDE();
+  bindCompanyPreview();
+  addRoom();
+})();
+</script>
+</body>
+</html>
