@@ -126,11 +126,12 @@
     <span class="small">Hinweis: Fotos werden nicht mitgespeichert und müssen nach dem Laden erneut ausgewählt werden.</span>
   </div>
   <div style="margin-top:10px" class="previewBox">
-    <strong>Firmenangaben (statisch)</strong>
+    <strong>Firmenangaben:</strong>
     <div class="previewGrid">
       <div class="kv"><span class="small">Firmenname</span><span id="pvName"></span></div>
       <div class="kv"><span class="small">Adresse</span><span id="pvAddr"></span></div>
-      <div class="kv"><span class="small">Website</span><span id="pvWeb"></span></div>
+ <div class="kv"><span class="small">Email</span><span id="pvEmail"></span></div>
+      <div class="kv"><span class="small">Telefon</span><span id="pvWeb"></span></div>
       <div class="small"><span class="ok">✔</span> Internet ist ok → Bibliotheken werden von CDN geladen.</div>
     </div>
   </div>
@@ -165,10 +166,10 @@
 
 // --- Statische Firmenkonfiguration (hier im HTML anpassen) ---
 const COMPANY = {
-  name: 'Test Test123',
-  web: 'www.example.com',
-  addr1: 'Musterstraße 1',
-  addr2: '12345 Musterstadt',
+  name: 'Ivan Borodzhiev',
+  web: '017672327214',
+  addr1: 'Schwanenbusch Str. 193',
+  email: 'borodzhiev@gmx.de',
   // Optional: Base64 Data-URL eines Logos (PNG/JPG). Wenn null, wird ein Platzhalter verwendet.
   logoDataUrl: null,
 };
@@ -187,7 +188,7 @@ const placeholderLogo = () => {
   <rect x="0" y="0" width="260" height="90" rx="14" fill="#1f4b90"/>
   <text x="18" y="52" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#ffffff">${initials}</text>
   <text x="78" y="38" font-family="Arial, sans-serif" font-size="16" fill="#d7e5ff">${(COMPANY.name || '').substring(0, 24)}</text>
-  <text x="78" y="60" font-family="Arial, sans-serif" font-size="12" fill="#d7e5ff">Dichtheitsprüfung</text>
+  
 </svg>`;
 
   return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
@@ -382,8 +383,9 @@ const placeholderLogo = () => {
   // --- Firmenvorschau (statisch, nicht editierbar im Frontend) ---
 function bindCompanyPreview(){
   document.getElementById('pvName').textContent = COMPANY.name || '';
-  document.getElementById('pvAddr').textContent = [COMPANY.addr1, COMPANY.addr2].filter(Boolean).join(' · ');
-  document.getElementById('pvWeb').textContent = COMPANY.web || '';
+  document.getElementById('pvAddr').textContent = (COMPANY.addr1 || '');
+  document.getElementById('pvEmail').textContent = (COMPANY.email || '');
+  document.getElementById('pvWeb').textContent = (COMPANY.web || '');
 }
 
 // --- LocalStorage ---
@@ -450,7 +452,7 @@ function bindCompanyPreview(){
     const company = {
   name: COMPANY.name || 'Max Testman',
   addr1: COMPANY.addr1 || '',
-  addr2: COMPANY.addr2 || '',
+  email: COMPANY.email || '',
   web: COMPANY.web || '',
 };
 
@@ -469,7 +471,7 @@ function bindCompanyPreview(){
       doc.text(company.name, marginL, y);
       doc.setFont('helvetica','normal');
       doc.setFontSize(9);
-      doc.text([company.addr1, company.addr2, company.web].filter(Boolean), marginL, y+5);
+      doc.text([company.addr1, company.email, company.web].filter(Boolean), marginL, y+5);
       // Logo right
       try{
         doc.addImage(logo, 'JPEG', pageW-62, pageH-30, 48, 18, undefined, 'FAST');
